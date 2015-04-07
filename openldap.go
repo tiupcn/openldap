@@ -155,18 +155,16 @@ func (self *Ldap) Bind(who, cred string) error {
  *
  */
 func (self *Ldap) Close() error {
-
-	// DEPRECATED
-	// API: int ldap_unbind(LDAP *ld)
-	rv := C.ldap_unbind(self.conn)
-
-	if rv == LDAP_OPT_SUCCESS {
-		return nil
+	
+	if self.conn != nil {
+		rv := C.ldap_unbind(self.conn)
+		if rv == LDAP_OPT_SUCCESS {
+			return nil
+		}
+		self.conn = nil
+		return errors.New(fmt.Sprintf("LDAP::Close() error (%d) : %s", int(rv), ErrorToString(int(rv))))
 	}
-
-	self.conn = nil
-	return errors.New(fmt.Sprintf("LDAP::Close() error (%d) : %s", int(rv), ErrorToString(int(rv))))
-
+	return errors.New("Has been closed before or an error has occured before")
 }
 /* 
  * Unbind() close LDAP connexion
